@@ -77,8 +77,8 @@ struct Parking {
     }
     
     func calculateFee(type: VehicleType, parkedTime: Int, hasDiscountCard: Bool) -> Int {
-        let startingFee = 120
-        if parkedTime <= startingFee {
+        let startingTime = 120
+        if parkedTime <= startingTime {
             if hasDiscountCard {
                 let priceWithDiscount = Double(type.fee) * 0.85
                 return Int(priceWithDiscount)
@@ -86,11 +86,11 @@ struct Parking {
                 return type.fee
             }
         } else {
-            let remainingTime = parkedTime - startingFee
-            let remainingTimeDividend = Double((remainingTime / 15)).rounded(.up)
-            let totalFee = startingFee + Int((remainingTimeDividend * 5))
+            let remainingTime = parkedTime - startingTime
+            let remainingTimeDividend = ceil(Double(remainingTime) / 15)
+            let totalFee = type.fee + Int((remainingTimeDividend * 5))
             if hasDiscountCard {
-                let priceWithDiscount = Double(totalFee) * 0.85
+                let priceWithDiscount = Double((Double(totalFee) * 0.85)).rounded(.up)
                 return Int(priceWithDiscount)
             } else {
                 return totalFee
@@ -129,6 +129,7 @@ struct Vehicle: Parkable, Hashable {
     let discountCard: String?
     var parkedTime: Int {
         let mins = Calendar.current.dateComponents([.minute], from: checkInTime, to: Date()).minute ?? 0
+        print("Minutes in Alkeparking: \(mins)")
         return mins
     }
     
@@ -141,12 +142,28 @@ struct Vehicle: Parkable, Hashable {
     }
 }
 
+func createCustomDate(stringDate: String) -> Date {
+    let parseDate: Date?
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+    parseDate = dateFormatter.date(from: stringDate)
+    if let parseDate = parseDate {
+        return parseDate
+    } else {
+        return Date()
+    }
+}
 
 // MARK: Tests
 var alkeParking = Parking(maxCapacity: 4)
 
+
+//Probar AlkeParking con Fecha personalizada (cambiar parametro "checkInTime" Date() por customDate)
+let customDate = createCustomDate(stringDate: "2022-05-31T19:02:02+0000")
+
+
 let car = Vehicle(plate: "AA111AA", type: VehicleType.car, checkInTime: Date(), discountCard: "DISCOUNT_CARD_001")
-let moto = Vehicle(plate: "B222BBB", type: VehicleType.moto, checkInTime: Date(), discountCard: nil)
+let moto = Vehicle(plate: "B222BBB", type: VehicleType.moto, checkInTime: customDate, discountCard: nil)
 let miniBus = Vehicle(plate: "CC333CC", type: VehicleType.miniBus, checkInTime: Date(), discountCard: nil)
 let bus = Vehicle(plate: "DD444DD", type: VehicleType.bus, checkInTime: Date(), discountCard: "DISCOUNT_CARD_002")
 let car2 = Vehicle(plate: "AA111CO", type: VehicleType.car, checkInTime: Date(), discountCard: "DISCOUNT_CARD_003")
